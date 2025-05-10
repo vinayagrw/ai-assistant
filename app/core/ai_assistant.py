@@ -1,7 +1,7 @@
 import os
 from typing import List, Dict
 import requests
-from duckduckgo_search import DDGS
+
 import time
 from pathlib import Path
 import chromadb
@@ -34,9 +34,6 @@ class AIAssistant:
         self.docs_path = "docs/"
         self.model_priority = MODEL_PRIORITY
         self.vector_db_path = VECTOR_DB_CONFIG["path"]
-        self.max_retries = SEARCH_CONFIG["max_retries"]
-        self.retry_delay = SEARCH_CONFIG["retry_delay"]
-        self.timeout = SEARCH_CONFIG["timeout"]
         self.executor = ThreadPoolExecutor(max_workers=2)
         self.cache = {}
         
@@ -281,90 +278,6 @@ class AIAssistant:
             logger.error(f"Error loading documentation: {str(e)}")
             return docs
 
-
-    async def _search_with_duckduckgo(self, query: str) -> List[Dict]:
-        """Search using DuckDuckGo"""
-        provider_config = self.search_providers["duckduckgo"]
-        for attempt in range(self.max_retries):
-            try:
-                with DDGS() as ddgs:
-                    search_results = list(ddgs.text(
-                        query,
-                        region=provider_config["region"],
-                        safesearch=provider_config["safesearch"],
-                        max_results=provider_config["max_results"]
-                    ))
-                    results = [
-                        {
-                            "title": result.get("title", ""),
-                            "link": result.get("link", ""),
-                            "body": result.get("body", "")
-                        }
-                        for result in search_results
-                    ]
-                    logger.info(f"DuckDuckGo search results for query '{query}':")
-                    for idx, result in enumerate(results, 1):
-                        logger.info(f"Result {idx}:")
-                        logger.info(f"  Title: {result['title']}")
-                        logger.info(f"  Link: {result['link']}")
-                        logger.info(f"  Body: {result['body'][:200]}...")  # Log first 200 chars of body
-                    return results
-            except Exception as e:
-                logger.error(f"Error in DuckDuckGo search: {str(e)}")
-                if "rate limit" in str(e).lower() or "too many requests" in str(e).lower():
-                    if attempt < self.max_retries - 1:
-                        wait_time = min(2 ** attempt + random.uniform(0, 1), 10)
-                        logger.warning(f"Rate limit hit, waiting {wait_time:.2f}s before retry...")
-                        await asyncio.sleep(wait_time)
-                        continue
-                elif attempt < self.max_retries - 1:
-                    continue
-                return []
-        return []
-
-        """Search using SerpAPI"""
-        provider_config = self.search_providers["serpapi"]
-        if not provider_config["api_key"]:
-            logger.warning("SerpAPI key not found")
-            return []
-
-        try:
-            params = {
-                'api_key': provider_config["api_key"],
-                'engine': provider_config["engine"],
-                'q': query,
-                'num': provider_config["num"],
-                'gl': provider_config["gl"],
-                'hl': provider_config["hl"]
-            }
-
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    provider_config["base_url"],
-                    params=params,
-                    timeout=self.timeout
-                ) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        results = []
-                        
-                        # Extract organic results
-                        if 'organic_results' in data:
-                            for result in data['organic_results']:
-                                results.append({
-                                    "title": result.get("title", ""),
-                                    "link": result.get("link", ""),
-                                    "body": result.get("snippet", "")
-                                })
-                        
-                        return results
-                    else:
-                        logger.error(f"SerpAPI error: {response.status}")
-                        return []
-
-        except Exception as e:
-            logger.error(f"Error in SerpAPI search: {str(e)}")
-            return []
 
     @log_execution_time
     async def process_query(self, query: str) -> QueryResponse:

@@ -1,4 +1,7 @@
 import aiohttp
+import asyncio
+from duckduckgo_search import DDGS
+
 from app.config.search_config import SEARCH_PROVIDERS, SEARCH_PROVIDER_PRIORITY,SEARCH_CONFIG
 from app.models.schemas import QueryResponse, Source
 from typing import List, Dict
@@ -8,6 +11,8 @@ from app.config.prompt import PROMPTS
 class InternetSearch:
     def __init__(self, search_providers):
         self.search_providers = search_providers
+        self.max_retries = SEARCH_CONFIG["max_retries"]
+        self.retry_delay = SEARCH_CONFIG["retry_delay"]
         self.timeout = SEARCH_CONFIG["timeout"]
         self.cache = {}
 
@@ -188,12 +193,53 @@ class InternetSearch:
                             
                             return results
                         else:
-                            logger.error(f"SerpAPI error: {response.status}")
+                            logger.error(f"SerpAPI error: {response.status} - {response.text}")
                             return []
 
             except Exception as e:
                 logger.error(f"Error in SerpAPI search: {str(e)}")
-                return []        
+                return []
+
+    async def _search_with_duckduckgo(self, query: str) -> List[Dict]:
+        """Search using DuckDuckGo"""
+        provider_config = self.search_providers["duckduckgo"]
+        for attempt in range(self.max_retries):
+            try:
+                with DDGS() as ddgs:
+                    search_results = list(ddgs.text(
+                        query,
+                        region=provider_config["region"],
+                        safesearch=provider_config["safesearch"],
+                        max_results=provider_config["max_results"]
+                    ))
+                    results = [
+                        {
+                            "title": result.get("title", ""),
+                            "link": result.get("link", ""),
+                            "body": result.get("body", "")
+                        }
+                        for result in search_results
+                    ]
+                    logger.info(f"DuckDuckGo search results for query '{query}':")
+                    for idx, result in enumerate(results, 1):
+                        logger.info(f"Result {idx}:")
+                        logger.info(f"  Title: {result['title']}")
+                        logger.info(f"  Link: {result['link']}")
+                        logger.info(f"  Body: {result['body'][:200]}...")  # Log first 200 chars of body
+                    return results
+            except Exception as e:
+                logger.error(f"Error in DuckDuckGo search: {str(e)}")
+                if "rate limit" in str(e).lower() or "too many requests" in str(e).lower():
+                    if attempt < self.max_retries - 1:
+                        wait_time = min(2 ** attempt + random.uniform(0, 1), 10)
+                        logger.warning(f"Rate limit hit, waiting {wait_time:.2f}s before retry...")
+                        await asyncio.sleep(wait_time)
+                        continue
+                elif attempt < self.max_retries - 1:
+                    continue
+                return []
+        return []
+                    
     def _extract_answer_from_sources(self, query: str, sources: List[Source]) -> str:
         """Extract a direct answer from sources using dynamic content scoring"""
         query_lower = query.lower()

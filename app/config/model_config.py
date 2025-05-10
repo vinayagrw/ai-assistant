@@ -156,7 +156,7 @@ RESPONSE_CONFIG = {
         },
         "response_format": {
             "type": "plain_text",           # Output as plain text
-            "include_sources": False,        # Don't include sources in response
+            "include_sources": True,        # Don't include sources in response
             "include_confidence": False,     # Don't include confidence score
             "include_metadata": False,       # Don't include any metadata
             "trim_response": True,          # Trim response to essential content

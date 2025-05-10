@@ -161,7 +161,7 @@ class RAG:
                         logger.info(f"Successfully generated response with {model} in {time.time() - start_time:.2f} seconds")
                         return response.json()['message']['content']
                     else:
-                        logger.warning(f"Model {model} returned status code {response.status_code}")
+                        logger.warning(f"Model {model} returned status code {response.status_code}-{response.text}")
                         continue
                         
                 except requests.exceptions.Timeout:
