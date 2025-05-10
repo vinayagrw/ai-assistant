@@ -1,0 +1,37 @@
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+# Ignore virtual environment
+.venv/
+env/
+venv/
+.git/
+# Ignore local environment variables
+.env
+
+# Ignore logs
+*.log
+
+# Ignore test files and directories
+tests/
+*.pytest_cache/
+*.cover
+*.coverage
+htmlcov/
+
+# Ignore build artifacts
+build/
+dist/
+*.egg-info/
+
+# Ignore IDE/editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore Docker-related files
+Dockerfile
+docker-compose.yml
+scripts/
