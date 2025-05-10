@@ -56,10 +56,10 @@ An intelligent AI assistant that can answer questions about DuploCloud documenta
 
 7. **Evaluation Techniques**:
 
-#### Direct Response Generation
+##### Direct Response Generation
    - Evaluates sentences based on word overlap with the user query to select the most relevant response.
 
-#### Scoring Sentences
+##### Scoring Sentences
    Sentences are scored using multiple criteria:
    - **Exact Match**: Higher scores for sentences containing the query.
    - **Word Overlap**: Scores based on the number of overlapping words between the query and the sentence.
@@ -157,14 +157,14 @@ ai-assistant/
      ```bash
      docker --version
      ```
-5. **Docker Deployment**:
+## Docker Deployment:
 
-a. **Build the Docker image**:
+1. **Build the Docker image**:
    ```bash
    docker build -t ai-assistant .
    ```
 
-b. **Run the container**:
+2. **Run the container**:
    ```bash
    **Run the container with the SerpAPI key**:
 
@@ -173,23 +173,31 @@ b. **Run the container**:
    ```
 
 
-## Running the Application
+## Run Application locally
 
-### Local Development
-
-1. **Start the API server**:
+**Start the API server**:
    ```bash
    python run.py
    ```
 
-### Running Tests
+### Execute Test cases
 
-1. **Run the tests**:
+**Run the tests**:
    ```bash
    pytest -s tests/test_assistant.py
    ```
 
-## Test AI Assistant using swagger try out option. Sample request body is already set by default for API /query 
+### Test AI Assistant
+ AI Agent can be tested using swagger try out option. Sample request body is already set by default for API /query 
+
+                  OR 
+
+Run Streamlit app for Chat interface by running  below script. Make sure you have AI Assistant running in docker image. 
+
+  ```bash
+   python streamlit_app.py
+   ```
+Then access Web UI in any browser - http://localhost:8501/ 
 
 ## API Documentation
 
