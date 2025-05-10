@@ -19,7 +19,6 @@ An intelligent AI assistant that can answer questions about DuploCloud documenta
 
 
 1. **Flask Application Initialization**:
-   - The Flask application is initialized with CORS (Cross-Origin Resource Sharing) enabled, allowing it to handle requests from different origins.
    - The API is set up using Flask-RESTx, which provides a structured way to define and document the API.
    - The `AIAssistant` class is initialized with configuration settings for the Ollama model and model priorities.
    - It loads documentation and initializes a vector database to store document embeddings for efficient querying.
@@ -170,7 +169,10 @@ ai-assistant/
 
    docker run -p 8000:8000 -e SERPAPI_API_KEY=your_api_key_here ai-assistant
    ```
-   ```
+
+## API Documentation
+
+Refer to the API documentation: http://localhost:8000/ for details on available endpoints and usage.
 
 
 ## Run Application locally
@@ -199,9 +201,6 @@ Run Streamlit app for Chat interface by running  below script. Make sure you hav
    ```
 Then access Web UI in any browser - http://localhost:8501/ 
 
-## API Documentation
-
-Refer to the API documentation: http://localhost:8000/ for details on available endpoints and usage.
 
 
 
