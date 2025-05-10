@@ -201,6 +201,8 @@ Run Streamlit app for Chat interface by running  below script. Make sure you hav
    ```
 Then access Web UI in any browser - http://localhost:8501/ 
 
+<figure><img src=".gitbook\streamlit.png" alt=""><figcaption></figcaption></figure>
+
 
 
 
